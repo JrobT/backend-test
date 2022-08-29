@@ -1,78 +1,112 @@
-# Hello! 👋
+# Backend test
 
-Firstly, thanks for taking the time to do this project!
-
-We appreciate these sorts of projects can be a time-suck, so we only ask people (like you!) that we genuinely think will be a great fit at Loopin. So congrats on making it this far!
-
-If you have any questions, you can chat to me (Alex Hughes) directly via email or LinkedIn.
-
-## Your Assignment
-
-We've built the `/frontend` for another generic todo app that's going to be the next big thing™; we've styled the components, added interfaces, and set-up all the data-fetching.
-
-The only thing is, we don't yet have an API or a database - that's where you come in.
-
-We want you to:
-
-- Fork this repository
-- Create a _new_ API in the folder `/backend` using Node.js and TypeScript
-- Modify the `/frontend` so that it calls your API successfully
-- Add a database (we use PostGres/Prisma but use whatever you are comfortable with)
-- Use git - and when you've finished the project, send us a link to your repository so we can review
+## ACs
 
 What we've testing for:
 
 - Can we add a new todo?
+  - Yes.
 - Can we update a todo to "completed"?
+  - Yes.
 - Are there sensible tests written in the API?
-- Do the CRUD actions work correctly, including updating the databse?
+  - I've added unit tests for the API endpoints. Jest is reporting good coverage. I expand on what else I would do below.
+- Do the CRUD actions work correctly, including updating the database?
+  - Yes.
 
-✨ **Bonus Round** ✨
+✨ Bonus Round ✨
 
 - How would you implement a tag system for the todos? i.e. if each Todo could have multiple tags? How would this effect your database architecture?
+  - I'd need to have a separate DB table schema for a 'tag' and probably a third table to allow for the many-to-many relationship. Once that's done I could alter the queries to produce a joined up response i.e. return all tags for a ToDo.
 - How would you implement infinite scrolling or pagination in this app? Please write a comment
+  - There's probably a load of third-party libraries for this but I think you can create a custom hook in React which uses `useEffect` or similar to call the 'GET' API endpoint. This call would probably have to have some sort of pagination option via SWR. With the results you would then produce your list. As for when this call would be made, you'd need to based it off of some Maths or whether an particular element is hit.
 - Do you have any ideas on how you would improve the app? Please write a comment
+  - I've used ORMs before (mainly QuerySet etc. from Django) but I haven't used Prisma before. I mocked it for the unit tests to avoid interacting with the DB. I would like to add more tests which also include coverage of the queries, such as E2E tests.
+  - There's a general lack of error handling across the board. I'd implement some responses from the backend that are returned for errors and then in the frontend I would probably look to implement some popups to describe the error which occurred.
+  - Probably more of a preference but I'd rather use the 'PUT' for updating the text of a ToDo and call 'DELETE' when the ToDo 'card' is clicked on (so completing = delete).
+  - Adding features like sorting columns of ToDos.
 - How would you add the functionality to delete todos? Please write a comment or ideally, implement the feature
+  - I've added a small cross button to each ToDo which calls the delete endpoint when clicked.
 
-## Getting Started
+## Setup
 
-To run the frontend app, you just need to fork this repo and run the commands:
+### Postgres
 
+MACOS install:
+
+```shell
+brew install postgresql
+brew install --cask pgadmin4
+brew services start postgresql
+psql postgres
 ```
+
+Create role:
+
+```sql
+CREATE ROLE jackt WITH LOGIN PASSWORD 'test';
+ALTER ROLE jackt CREATEDB;
+```
+
+Migrate:
+
+```shell
+npm i
+npx prisma migrate dev --name init
+```
+
+Test:
+
+```sql
+INSERT INTO "ToDo" (title, completed) VALUES ('This is a test TODO', false);
+```
+
+Result:
+
+```sql
+todo=> SELECT * FROM "ToDo";
+id |        title        | completed
+----+---------------------+-----------
+1 | This is a test TODO | f
+(1 row)
+```
+
+### Backend
+
+#### `.env`
+
+```shell
+API_PORT=3001
+DATABASE_URL="postgresql://jackt:test@localhost:5432/todo?schema=public"
+FRONTEND_URL="http://localhost:3000"
+```
+
+#### Run Backend
+
+```shell
+cd backend
+npm i
+npm run serve
+```
+
+Navigate to `localhost:3001/todo`.
+
+### Frontend
+
+#### Run Frontend
+
+```shell
 cd frontend
-```
-
-```
-npm install
-```
-
-and
-
-```
+npm i
 npm run dev
 ```
 
-And you're done! 🎉
+Navigate to `localhost:3000`.
 
-Familiarise yourself with what is in `models` and `services`, and take a look around at how we've implemented any mutations for ideas about how to get started.
+### Run together
 
-## Technologies
+```shell
+npm i
+npm run start
+```
 
-For this test, we've tried to use a similar stack to what we actually use on on our frontend and website, so hopefully it will give you a little taste of what it's like to work at Loopin.
-
-It's a very simple React app - built with Next.js and TypeScript, and styled with Tailwind. We're using SWR for data fetching, although at the moment it's only returning dummy data.
-
-Here's a few links to resources that might be helpful:
-
-- [TailwindCSS](https://tailwindcss.com/)
-- [SWR: Getting Started](https://swr.vercel.app/docs/getting-started)
-- [SWR: Mutations](https://swr.vercel.app/docs/mutation)
-- [Next.js](https://nextjs.org/)
-
-## Next Steps!
-
-Once you've completed the task, please send it to the recruiter or directly to me.
-
-If you're struggling or get stuck, please still submit something - we're looking more for how _you_ code, over absolute functionality - and whatever the outcome, we will send you feedback that will hopefully help in your future.
-
-Good luck! 🤞
+Navigate to `localhost:3000`.
